@@ -1,4 +1,4 @@
-NAME	:= test
+NAME	:= a.out
 SRCS	:= main.cpp vector.cpp
 SRC_DIR := ./src
 INC_DIR := ./include

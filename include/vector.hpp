@@ -2,6 +2,7 @@
 #define VECTOR_HPP
 
 #include <memory>
+#include "iterator.hpp"
 
 namespace ft
 {
@@ -9,7 +10,7 @@ namespace ft
 	class vector
 	{
 		public:
-			/* type definitions */
+			/* Type definitions */
 			typedef T value_type;
 			typedef Allocator allocator_type;
 			typedef std::size_t size_type;
@@ -19,30 +20,78 @@ namespace ft
 			typedef typename Allocator::pointer pointer;
 			typedef typename Allocator::const_pointer const_pointer;
 			// TODO: implement iterator (also reverse one)
-			typedef iterator;
-			typedef const_iterator;
-			typedef reverse_iterator;
-			typedef const_reverse_iterator;
+			typedef pointer iterator;
+			typedef const pointer const_iterator;
+			typedef ft::reverse_iterator<iterator> reverse_iterator;
+			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 
 			/* Constructers */
-			vector( void );
-			explicit vector( const Allocator& alloc );
-			explicit vector( size_type count, const T& value = T(), const Allocator& alloc = Allocator() );
-			template< class InputIt >
-			vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() );
-			vector( const vector& other );
+			vector( void ):
+				allocator_(allocator_type()), first_(allocator_.allocate(0)),
+				last_(first_ + 1), capacity_last_(last_)
+			{}
+
+			explicit vector( const Allocator& alloc ):
+				allocator_(alloc), first_(allocator_.allocate(0)),
+				last_(first_ + 1), capacity_last_(last_)
+			{}
+
+			explicit vector( size_type count, const T& value = T(), const Allocator& alloc = Allocator() ):
+				allocator_(alloc), first_(allocator_.allocate(count)),
+				last_(first_ + count), capacity_last(last_)
+			{
+				for (pointer p = first_; p < last_; ++p)
+				{
+					allocator_.construct(p, value);
+				}
+			}
+
+			template < class InputIt >
+			vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ):
+				allocator_(alloc), first_(allocator_.allocate(last - first)),
+				last_(first_ + (last - first)), capacity_last_(last_)
+			{
+				InputIt it = first;
+
+				for (pointer p = first_; p < last_; ++p)
+				{
+					allocator_.construct(p, *it);
+					++it;
+				}
+			}
+
+			vector( const vector& other )
+			{
+				*this = other;
+			}
 
 			/* Destructer */
-			~vector();
+			virtual ~vector( void )
+			{
+				for (pointer p = first_; p < last_; ++p)
+				{
+					allocator_.destroy(p);
+				}
+				allocator_.deallocate(first_, capacity_last_ - first_);
+			}
 
 			/* Assignations */
-			vector& operator=( const vector& other );
+			vector& operator=( const vector& other )
+			{
+				if (this != &rhs)
+				{
+					// reallocate this->data_memory
+					// deepcopy other's contents
+					// set private var
+				}
+				return (*this);
+			}
 
-			void assign( size_type count, const T& value );
+			void assign( size_type count, const T& value ) {};
 			template < class InputIt >
-			void assign( InputIt first, InputIt last );
+			void assign( InputIt first, InputIt last ) {};
 
-			allocator_type get_allocator( void ) const;
+			allocator_type get_allocator( void ) const { return allocator_; }
 
 			/* Element access */
 			reference at( size_type pos );
@@ -61,7 +110,11 @@ namespace ft
 			const T* data( void ) const;
 
 			/* Iterators */
-			iterator begin( void );
+			iterator begin( void )
+			{
+				iterator res = first_;
+				return (res);
+			}
 			const_iterator begin( void ) const;
 
 			iterator end( void );
@@ -97,8 +150,11 @@ namespace ft
 			void swap( vector& other );
 		
 		private:
-
-	};
+			pointer first_;
+			pointer last_;
+			pointer capacity_last_;
+			allocator_type allocator_;
+	}; // namespace ft
 
 	/* Non-member functions */
 	template < class T, class Alloc >
