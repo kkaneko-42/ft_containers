@@ -32,11 +32,15 @@ pair: pair_test.cpp $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -std=c++98 -c $< -o $(OBJ_DIR)/pair_test.o -I $(INC_DIR)
 	$(CXX) $(CXXFLAGS) $(OBJ_DIR)/pair_test.o -o $@ -I $(INC_DIR)
 
+iterator: iterator_test.cpp $(OBJ_DIR) 
+	$(CXX) $(CXXFLAGS) -c $< -o $(OBJ_DIR)/iterator_test.o -I $(INC_DIR)
+	$(CXX) $(CXXFLAGS) $(OBJ_DIR)/iterator_test.o -o $@ -I $(INC_DIR)
+
 clean:
 	rm -rf $(OBJ_DIR)
 
 fclean: clean
-	rm -f enable_if is_integral equal lexicographical_compare pair
+	rm -f enable_if is_integral equal lexicographical_compare pair iterator
 
 re: fclean all
 

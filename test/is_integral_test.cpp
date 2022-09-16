@@ -113,7 +113,6 @@ int main(int ac, char **av)
 	nb_err += is_integral_test<const volatile std::string>(verbose);
 	nb_err += is_integral_test<volatile const std::string>(verbose);
 
-
 	if (nb_err == 0)
 		std::cout << "\033[32mAll OK\033[m" << std::endl;
 	else

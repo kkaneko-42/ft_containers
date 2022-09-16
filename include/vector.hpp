@@ -3,13 +3,14 @@
 
 #include <memory>
 #include "iterator.hpp"
+#include "enable_if.hpp"
 
 namespace ft
 {
 	template < class T, class Allocator = std::allocator<T> >
 	class vector
 	{
-		public:
+	    public:
 			/* Type definitions */
 			typedef T value_type;
 			typedef Allocator allocator_type;
@@ -20,8 +21,8 @@ namespace ft
 			typedef typename Allocator::pointer pointer;
 			typedef typename Allocator::const_pointer const_pointer;
 			// TODO: implement iterator (also reverse one)
-			typedef pointer iterator;
-			typedef const pointer const_iterator;
+			typedef ft::random_access_iterator iterator;
+			typedef const ft::random_access_iterator const_iterator;
 			typedef ft::reverse_iterator<iterator> reverse_iterator;
 			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 
@@ -46,7 +47,7 @@ namespace ft
 				}
 			}
 
-			template < class InputIt >
+			template < class InputIt, class enable = !ft::enable_if< ft::is_integral<InputIt> >::type >
 			vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ):
 				allocator_(alloc), first_(allocator_.allocate(last - first)),
 				last_(first_ + (last - first)), capacity_last_(last_)
