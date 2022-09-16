@@ -28,20 +28,55 @@ namespace ft
 			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 
 			/* Constructers */
-			vector( void ):
-				allocator_(allocator_type()), first_(allocator_.allocate(0)),
-				last_(first_), capacity_last_(last_)
-			{}
+            // TODO: all allocation by allocator may throw an exception. re-throw it.
+			vector( void ): allocator_(allocator_type())
+			{
+                try
+                {
+                    first_ = allocator_.allocate(0);
+                }
+                catch(const std::exception& e)
+                {
+                    // Throw exception thrown by the allocation.
+                    throw;
+                }
+                last_ = first_;
+                capacity_last_ = last_;
+            }
 
-			explicit vector( const Allocator& alloc ):
-				allocator_(alloc), first_(allocator_.allocate(0)),
+			explicit vector( const Allocator& alloc ): allocator_(alloc), first_(allocator_.allocate(0)),
 				last_(first_), capacity_last_(last_)
-			{}
+			{
+                try
+                {
+                    first_ = allocator_.allocate(0);
+                }
+                catch(const std::exception& e)
+                {
+                    // Throw exception thrown by the allocation.
+                    throw;
+                }
+                last_ = first_;
+                capacity_last_ = last_;
+            }
 
-			explicit vector( size_type count, const T& value = T(), const Allocator& alloc = Allocator() ):
-				allocator_(alloc), first_(allocator_.allocate(count)),
+			explicit vector( size_type count, const T& value = T(), const Allocator& alloc = Allocator() )
+            : allocator_(alloc), first_(allocator_.allocate(count)),
 				last_(first_ + count), capacity_last(last_)
 			{
+                try
+                {
+                    first_ = allocator_.allocate(count);
+                }
+                catch(const std::exception& e)
+                {
+                    // Throw exception thrown by the allocation.
+                    throw;
+                }
+                last_ = first_ + count;
+                capacity_last_ = last_;
+
+                // Initialize contents
 				for (pointer p = first_; p < last_; ++p)
 				{
 					allocator_.construct(p, value);
@@ -163,14 +198,29 @@ namespace ft
             }
 			void reserve( size_type new_cap )
             {
+                if (new_cap > max_size())
+                    throw std::length_error("ft::vector: reserved by invalid size");
+
                 if (new_cap <= capacity())
                     return;
+
                 for (pointer p = first_; p < last_; ++p)
 				{
 					allocator_.destroy(p);
 				}
 				allocator_.deallocate(first_, capacity_last_ - first_);
-                first_ = allocator_.allocate(new_cap);
+                
+                try
+                {
+                    first_ = allocator_.allocate(new_cap);
+                }
+                catch(const std::exception& e)
+                {
+                    // Throw exception thrown by the allocation.
+                    throw;
+                }
+                last_ = first_;
+                capacity_last_ = first_ + new_cap;
             }
 			size_type capacity( void ) const
             {
@@ -245,16 +295,7 @@ namespace ft
 	template < class T, class Alloc >
 	bool operator>( const ft::vector<T, Alloc>& lhs, const ft::vector<T, Alloc>& rhs )
     {
-        return (
-            ft::lexicographical_compare<
-            typename ft::vector<T>::iterator,
-            typename ft::vector<T>::iterator,
-            typename ft::vector<T>::iterator,
-            typename ft::vector<T>::iterator>(
-                rhs.begin(), rhs.end(),
-                lhs.begin(), lhs.end()
-            )
-        );
+        return (rhs < lhs);
     }
 
 	template < class T, class Alloc >
