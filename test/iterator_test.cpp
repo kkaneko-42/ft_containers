@@ -48,10 +48,23 @@ int main(int ac, char **av)
     {
         nb_err += expect<int>("Access test", array[i], *it, verbose);
     }
-    --it;
+    it = ft::random_access_iterator<int>(array + len - 1);
     for (std::size_t i = len - 1; ; --i, --it)
     {
         nb_err += expect<int>("Access test", array[i], *it, verbose);
+        if (i == 0)
+            break;
+    }
+
+    ft::reverse_iterator< ft::random_access_iterator<int> > r_it(it);
+    for (std::size_t i = 0; i < len; ++i, --r_it)
+    {
+        nb_err += expect<int>("Access test", array[i], *r_it, verbose);
+    }
+    ++r_it;
+    for (std::size_t i = len - 1; ; --i, ++r_it)
+    {
+        nb_err += expect<int>("Access test", array[i], *r_it, verbose);
         if (i == 0)
             break;
     }
