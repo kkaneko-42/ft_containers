@@ -20,9 +20,8 @@ namespace ft
 			typedef const value_type& const_reference;
 			typedef typename Allocator::pointer pointer;
 			typedef typename Allocator::const_pointer const_pointer;
-			// TODO: implement iterator (also reverse one)
-			typedef ft::random_access_iterator iterator;
-			typedef const ft::random_access_iterator const_iterator;
+			typedef ft::random_access_iterator<value_type> iterator;
+			typedef const ft::random_access_iterator<value_type> const_iterator;
 			typedef ft::reverse_iterator<iterator> reverse_iterator;
 			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 
@@ -113,23 +112,49 @@ namespace ft
 			/* Iterators */
 			iterator begin( void )
 			{
-				iterator res = first_;
-				return (res);
+				return (iterator(first_));
 			}
-			const_iterator begin( void ) const;
+			const_iterator begin( void ) const
+            {
+                return (const_iterator(first_));
+            }
 
-			iterator end( void );
-			const_iterator end( void ) const;
+			iterator end( void )
+            {
+                return (iterator(last_));
+            }
+			const_iterator end( void ) const
+            {
+                return (const_iterator(end_));
+            }
 
-			reverse_iterator rbegin( void );
-			const_reverse_iterator rbegin( void ) const;
+			reverse_iterator rbegin( void )
+            {
+                return (reverse_iterator(end() - 1));
+            }
+			const_reverse_iterator rbegin( void ) const
+            {
+                return (reverse_iterator(end() - 1));
+            }
 
-			reverse_iterator rend( void );
-			const_reverse_iterator rend( void ) const;
+			reverse_iterator rend( void )
+            {
+                return (reverse_iterator(start() - 1));
+            }
+			const_reverse_iterator rend( void ) const
+            {
+                return (reverse_iterator(start() - 1));
+            }
 
 			/* Capacity */
-			bool empty( void ) const;
-			size_type size( void ) const;
+			bool empty( void ) const
+            {
+                return ();
+            }
+			size_type size( void ) const
+            {
+                return (last_ - first_);
+            }
 			size_type max_size( void ) const;
 			void reserve( size_type new_cap );
 			size_type capacity( void ) const;
