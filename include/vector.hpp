@@ -283,6 +283,10 @@ namespace ft
                 }
 
                 // replace
+                for (pointer p = first_; p < last_; ++p)
+                {
+                    allocator_.destroy(p);
+                }
                 allocator_.deallocate(first_, current_capacity);
                 first_ = new_first;
                 last_ = new_first + current_size;
