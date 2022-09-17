@@ -44,8 +44,7 @@ namespace ft
                 capacity_last_ = last_;
             }
 
-			explicit vector( const Allocator& alloc ): allocator_(alloc), first_(allocator_.allocate(0)),
-				last_(first_), capacity_last_(last_)
+			explicit vector( const Allocator& alloc ): allocator_(alloc)
 			{
                 try
                 {
@@ -61,8 +60,7 @@ namespace ft
             }
 
 			explicit vector( size_type count, const T& value = T(), const Allocator& alloc = Allocator() )
-            : allocator_(alloc), first_(allocator_.allocate(count)),
-				last_(first_ + count), capacity_last(last_)
+            : allocator_(alloc)
 			{
                 try
                 {
@@ -84,16 +82,27 @@ namespace ft
 			}
 
 			template < class InputIt, class enable = !ft::enable_if< ft::is_integral<InputIt> >::type >
-			vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ):
-				allocator_(alloc), first_(allocator_.allocate(last - first)),
-				last_(first_ + (last - first)), capacity_last_(last_)
+			vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() )
+            : allocator_(alloc)
 			{
 				InputIt it = first;
 
-				for (pointer p = first_; p < last_; ++p)
+                try
+                {
+                    first_ = allocator_.allocate(last - first);
+                }
+                catch(const std::exception& e)
+                {
+                    // Throw exception thrown by the allocation.
+                    throw;
+                }
+                last_ = first_ + (last - first);
+                capacity_last_ = last_;
+                
+                // Initialize contents
+				for (pointer p = first_; p < last_; ++p, ++it)
 				{
 					allocator_.construct(p, *it);
-					++it;
 				}
 			}
 
@@ -124,27 +133,75 @@ namespace ft
 				return (*this);
 			}
 
-			void assign( size_type count, const T& value ) {};
+			void assign( size_type count, const T& value )
+            {
+                if (count <= size())
+                {
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        *(first_ + i) = value;
+                    }
+                }
+                else
+                {
+                    ft::vector<T> res(count, value);
+                    *this = res;
+                }
+            }
 			template < class InputIt >
 			void assign( InputIt first, InputIt last ) {};
 
 			allocator_type get_allocator( void ) const { return allocator_; }
 
 			/* Element access */
-			reference at( size_type pos );
-			const_reference at( size_type pos ) const;
+			reference at( size_type pos )
+            {
+                if (!(pos < size()))
+                    throw std::out_of_range("ft::vector: invalid pos of \"at\"");
+                return (*(first_ + pos));
+            }
+			const_reference at( size_type pos ) const
+            {
+                if (!(pos < size()))
+                    throw std::out_of_range("ft::vector: invalid pos of \"at\"");
+                return (*(first_ + pos));
+            }
 
-			reference operator[]( size_type pos );
-			const_reference operator[]( size_type pos ) const;
+			reference operator[]( size_type pos )
+            {
+                return (*(first_ + pos));
+            }
+			const_reference operator[]( size_type pos ) const
+            {
+                return (*(first_ + pos));
+            }
 
-			reference front( void );
-			const_reference front( void ) const;
+			reference front( void )
+            {
+                return (*first_);
+            }
+			const_reference front( void ) const
+            {
+                return (*first_)
+            }
 
-			reference back( void );
-			const_reference back( void ) const;
+			reference back( void )
+            {
+                return (*(last_ - 1));
+            }
+			const_reference back( void ) const
+            {
+                return (*(last_ - 1));
+            }
 
-			T* data( void );
-			const T* data( void ) const;
+			T* data( void )
+            {
+                return (first_);
+            }
+			const T* data( void ) const
+            {
+                return (first_);
+            }
 
 			/* Iterators */
 			iterator begin( void )
@@ -167,20 +224,20 @@ namespace ft
 
 			reverse_iterator rbegin( void )
             {
-                return (reverse_iterator(end() - 1));
+                return (reverse_iterator(last_ - 1));
             }
 			const_reverse_iterator rbegin( void ) const
             {
-                return (reverse_iterator(end() - 1));
+                return (reverse_iterator(last_ - 1));
             }
 
 			reverse_iterator rend( void )
             {
-                return (reverse_iterator(start() - 1));
+                return (reverse_iterator(first_ - 1));
             }
 			const_reverse_iterator rend( void ) const
             {
-                return (reverse_iterator(start() - 1));
+                return (reverse_iterator(first_ - 1));
             }
 
 			/* Capacity */
@@ -198,37 +255,54 @@ namespace ft
             }
 			void reserve( size_type new_cap )
             {
+                const size_type current_size = size();
+                const size_type current_capacity = capacity();
+                pointer new_first;
+
+                // validate new_cap
                 if (new_cap > max_size())
                     throw std::length_error("ft::vector: reserved by invalid size");
-
-                if (new_cap <= capacity())
+                else if (new_cap <= capacity())
                     return;
-
-                for (pointer p = first_; p < last_; ++p)
-				{
-					allocator_.destroy(p);
-				}
-				allocator_.deallocate(first_, capacity_last_ - first_);
-                
+            
+                // allocate new one
                 try
                 {
-                    first_ = allocator_.allocate(new_cap);
+                    new_first = allocator_.allocate(new_cap);
                 }
                 catch(const std::exception& e)
                 {
                     // Throw exception thrown by the allocation.
                     throw;
                 }
-                last_ = first_;
-                capacity_last_ = first_ + new_cap;
+
+                // copy old contents
+                for (size_type i = 0; i < current_size; ++i)
+                {
+                    allocator_.construct(new_first + i, *(first_ + i));
+                }
+
+                // replace
+                allocator_.deallocate(first_, current_capacity);
+                first_ = new_first;
+                last_ = new_first + current_size;
+                capacity_last_ = new_first + new_cap;
             }
+
 			size_type capacity( void ) const
             {
                 return (capacity_last_ - first_);
             }
 
 			/* Modifiers */
-			void clear( void );
+			void clear( void )
+            {
+                while (end_ != first_)
+                {
+                    allocator_.destroy(end_ - 1);
+                    --end_;
+                }
+            }
 
 			iterator insert( iterator pos, const T& value );
 			void insert( iterator pos, size_type count, const T& value );
@@ -238,9 +312,24 @@ namespace ft
 			iterator erase( iterator pos );
 			iterator erase( iterator first, iterator last );
 
-			void push_back( const T& value );
-			void pop_back( void );
-			void resize( size_type count, T value = T() );
+			void push_back( const T& value )
+            {
+                if (last_ == capacity_last_)
+                {
+                    // realloc(current size * 2)
+                }
+                allocator_.construct(last_, value);
+                ++last_;
+            }
+			void pop_back( void )
+            {
+                allocator_.destruct(last_ - 1);
+                --last_;
+            }
+			void resize( size_type count, T value = T() )
+            {
+
+            }
 			void swap( vector& other );
 		
 		private:
@@ -254,15 +343,7 @@ namespace ft
 	template < class T, class Alloc >
 	bool operator==( const ft::vector<T, Alloc>& lhs, const ft::vector<T, Alloc>& rhs )
     {
-        if (lhs.size() != rhs.size())
-            return (false);
-        return (
-            ft::equal<
-            typename ft::vector<T>::iterator,
-            typename ft::vector<T>::iterator>(
-                lhs.begin(), lhs.end(), rhs.begin()
-            )
-        );
+        return (!(lhs > rhs) && !(lhs < rhs));
     }
 
 	template < class T, class Alloc >
