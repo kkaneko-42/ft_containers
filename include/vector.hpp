@@ -81,8 +81,10 @@ namespace ft
 				}
 			}
 
-			template < class InputIt, class enable = !ft::enable_if< ft::is_integral<InputIt> >::type >
-			vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() )
+            // InputIt is not integer(SFINAE)
+			template < class InputIt >
+			vector( ft::enable_if<!ft::is_integral<InputIt>::value, InputIt>::type first,
+                InputIt last, const Allocator& alloc = Allocator() )
             : allocator_(alloc)
 			{
 				InputIt it = first;
@@ -126,30 +128,99 @@ namespace ft
 			{
 				if (this != &rhs)
 				{
-					// reallocate this->data_memory
-					// deepcopy other's contents
-					// set private var
+					assign<typename iterator>(other.begin(), other.end());
 				}
 				return (*this);
 			}
 
 			void assign( size_type count, const T& value )
             {
-                if (count <= size())
+                const size_type current_size = size();
+
+                if (count > capacity())
                 {
+                    try
+                    {
+                        pointer new_first = allocator_.allocate(count);
+                    }
+                    catch(const std::exception& e)
+                    {
+                        throw;
+                    }
+
                     for (size_type i = 0; i < count; ++i)
                     {
-                        *(first_ + i) = value;
+                        allocator_.construct(new_first + i, value);
                     }
+
+                    for (pointer p = first_; p < last_; ++p)
+                    {
+                        allocator_.destroy(p);
+                    }
+                    allocator_.deallocate(first_, capacity());
+                    first_ = new_first;
+                    last_ = new_first + count;
+                    capacity_last_ = new_first + count;
                 }
                 else
                 {
-                    ft::vector<T> res(count, value);
-                    *this = res;
+                    for (size_type i = 0; i < current_size; ++i)
+                    {
+                        *(first_ + i) = value;
+                    }
+                    while (i < count)
+                    {
+                        allocator_.construct(first_ + i, value);
+                        ++i;
+                    }
                 }
             }
+
+            // InputIt is not integer(SFINAE)
 			template < class InputIt >
-			void assign( InputIt first, InputIt last ) {};
+			void assign( ft::enable_if<!is_integral<InputIt>::value, InputIt>::type first, InputIt last )
+            {
+                const size_type src_size = static_cast<typename size_type>(last - first);
+                const size_type current_size = size();
+
+                if (src_size > capacity())
+                {
+                    try
+                    {
+                        pointer new_first = allocator_.allocate(src_size);
+                    }
+                    catch(const std::exception& e)
+                    {
+                        throw;
+                    }
+
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        allocator_.construct(new_first + i, *(first + i));
+                    }
+
+                    for (pointer p = first_; p < last_; ++p)
+                    {
+                        allocator_.destroy(p);
+                    }
+                    allocator_.deallocate(first_, capacity());
+                    first_ = new_first;
+                    last_ = new_first + count;
+                    capacity_last_ = new_first + count;
+                }
+                else
+                {
+                    for (size_type i = 0; i < current_size; ++i)
+                    {
+                        *(first_ + i) = *(first + i);
+                    }
+                    while (i < src_size)
+                    {
+                        allocator_.construct(first_ + i, *(first + i));
+                        ++i;
+                    }
+                }
+            }
 
 			allocator_type get_allocator( void ) const { return allocator_; }
 

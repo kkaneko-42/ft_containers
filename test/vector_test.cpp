@@ -49,13 +49,18 @@ class Sample
 int main()
 {
 	std::vector<Sample> a(5);
-    Sample s;
+    std::vector<Sample> b(8);
 
     std::cout << a.capacity() << std::endl;
     std::cout << a.size() << std::endl;
-    a.reserve(6);
     std::cout << "=====" << std::endl;
+    a.reserve(7);
     std::cout << a.capacity() << std::endl;
     std::cout << a.size() << std::endl;
+    std::cout << "=====" << std::endl;
+    a.assign(b.begin(), b.end());
+    std::cout << a.capacity() << std::endl;
+    std::cout << a.size() << std::endl;
+    std::cout << "=====" << std::endl;
     return (0);
 }
