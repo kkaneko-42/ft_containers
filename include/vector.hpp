@@ -2,10 +2,13 @@
 #define VECTOR_HPP
 
 #include <memory>
+#include <limits>
 #include "iterator.hpp"
 #include "enable_if.hpp"
+#include "is_integral.hpp"
 #include "equal.hpp"
 #include "lexicographical_compare.hpp"
+#include "utility.hpp"
 
 namespace ft
 {
@@ -28,7 +31,6 @@ namespace ft
 			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 
 			/* Constructers */
-            // TODO: all allocation by allocator may throw an exception. re-throw it.
 			vector( void ): allocator_(allocator_type())
 			{
                 try
@@ -81,9 +83,9 @@ namespace ft
 				}
 			}
 
-            // InputIt is not integer(SFINAE)
+            // InputIt is not an integer(SFINAE)
 			template < class InputIt >
-			vector( ft::enable_if<!ft::is_integral<InputIt>::value, InputIt>::type first,
+			vector( typename ft::enable_if<!ft::is_integral<InputIt>::value, InputIt>::type first,
                 InputIt last, const Allocator& alloc = Allocator() )
             : allocator_(alloc)
 			{
@@ -126,9 +128,9 @@ namespace ft
 			/* Assignations */
 			vector& operator=( const vector& other )
 			{
-				if (this != &rhs)
+				if (this != &other)
 				{
-					assign<typename iterator>(other.begin(), other.end());
+					assign<iterator>(other.begin(), other.end());
 				}
 				return (*this);
 			}
@@ -136,12 +138,13 @@ namespace ft
 			void assign( size_type count, const T& value )
             {
                 const size_type current_size = size();
+                pointer new_first;
 
                 if (count > capacity())
                 {
                     try
                     {
-                        pointer new_first = allocator_.allocate(count);
+                        new_first = allocator_.allocate(count);
                     }
                     catch(const std::exception& e)
                     {
@@ -164,9 +167,11 @@ namespace ft
                 }
                 else
                 {
-                    for (size_type i = 0; i < current_size; ++i)
+                    size_type i = 0;
+                    while (i < current_size)
                     {
                         *(first_ + i) = value;
+                        ++i;
                     }
                     while (i < count)
                     {
@@ -178,16 +183,17 @@ namespace ft
 
             // InputIt is not integer(SFINAE)
 			template < class InputIt >
-			void assign( ft::enable_if<!is_integral<InputIt>::value, InputIt>::type first, InputIt last )
+			void assign( typename ft::enable_if<!ft::is_integral<InputIt>::value, InputIt>::type first, InputIt last )
             {
-                const size_type src_size = static_cast<typename size_type>(last - first);
+                const size_type count = static_cast<size_type>(last - first);
                 const size_type current_size = size();
+                pointer new_first;
 
-                if (src_size > capacity())
+                if (count > capacity())
                 {
                     try
                     {
-                        pointer new_first = allocator_.allocate(src_size);
+                        new_first = allocator_.allocate(count);
                     }
                     catch(const std::exception& e)
                     {
@@ -210,11 +216,13 @@ namespace ft
                 }
                 else
                 {
-                    for (size_type i = 0; i < current_size; ++i)
+                    size_type i = 0;
+                    while (i < current_size)
                     {
                         *(first_ + i) = *(first + i);
+                        ++i;
                     }
-                    while (i < src_size)
+                    while (i < count)
                     {
                         allocator_.construct(first_ + i, *(first + i));
                         ++i;
@@ -253,7 +261,7 @@ namespace ft
             }
 			const_reference front( void ) const
             {
-                return (*first_)
+                return (*first_);
             }
 
 			reference back( void )
@@ -290,7 +298,7 @@ namespace ft
             }
 			const_iterator end( void ) const
             {
-                return (const_iterator(end_));
+                return (const_iterator(last_));
             }
 
 			reverse_iterator rbegin( void )
@@ -322,7 +330,7 @@ namespace ft
             }
 			size_type max_size( void ) const
             {
-                std::numeric_limits<difference_type>::max();
+                return (std::numeric_limits<difference_type>::max());
             }
 			void reserve( size_type new_cap )
             {
@@ -372,40 +380,190 @@ namespace ft
 			/* Modifiers */
 			void clear( void )
             {
-                while (end_ != first_)
+                while (last_ != first_)
                 {
-                    allocator_.destroy(end_ - 1);
-                    --end_;
+                    allocator_.destroy(last_ - 1);
+                    --last_;
                 }
+                // first_ == last_, means size() == 0
             }
 
-			iterator insert( iterator pos, const T& value );
-			void insert( iterator pos, size_type count, const T& value );
-			template < class InputIt >
-			void insert( iterator pos, InputIt first, InputIt last );
+			iterator insert( iterator pos, const T& value )
+            {
+                const size_type pos_idx = static_cast<size_type>(pos - begin());
 
-			iterator erase( iterator pos );
-			iterator erase( iterator first, iterator last );
+                if (last_ == capacity_last_)
+                {
+                    reserve(capacity() * 2);
+                }
+
+                if (pos_idx = size())
+                {
+                    allocator_.construct(last_, value);
+                    ++last_;
+                }
+                else
+                {
+                    allocator_.construct(last_, *(last_ - 1));
+                    for (size_type i = size() - 1; i > pos_idx; ++i)
+                    {
+                        *(first_ + i) = *(first_ + i - 1);
+                    }
+                    *(first_ + pos_idx) = value;
+                    last_ += 1;
+                }
+
+                return (begin() + pos_idx);
+            }
+
+			void insert( iterator pos, size_type count, const T& value )
+            {
+                const size_type pos_idx = static_cast<size_type>(pos - begin());
+
+                // if capacity is enough, do nothing
+                reserve(count + size());
+
+                // pos == end()
+                if (begin() + pos_idx == end())
+                {
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        allocator_.construct(last_ + i, value);
+                    }
+                    last_ += count;
+                }
+                else
+                {
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        allocator_.construct(last_ + i, *(last_ - count + i));
+                    }
+                    for (size_type i = size() - 1; i > pos_idx + count; ++i)
+                    {
+                        *(first_ + i) = *(first_ + i - count);
+                    }
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        *(first_ + pos_idx + i) = value;
+                    }
+                    last_ += count;
+                }
+
+                return (begin() + pos_idx);
+            }
+
+			template < class InputIt >
+			void insert( iterator pos, InputIt first,
+                typename ft::enable_if<!is_integral<InputIt>::value, InputIt>::type last )
+            {
+                const size_type count = static_cast<size_type>(last - first);
+                const size_type pos_idx = static_cast<size_type>(pos - begin());
+
+                // if capacity is enough, do nothing
+                reserve(count + size());
+
+                if (begin() + pos_idx == end())
+                {
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        allocator_.construct(last_ + i, *(first + i));
+                    }
+                    last_ += count;
+                }
+                else
+                {
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        allocator_.construct(last_ + i, *(last_ - count + i));
+                    }
+                    for (size_type i = size() - 1; i > pos_idx + count; ++i)
+                    {
+                        *(first_ + i) = *(first_ + i - count);
+                    }
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        *(first_ + pos_idx + i) = *(first + i);
+                    }
+                    last_ += count;
+                }
+
+                return (begin() + pos_idx);
+            }
+
+			iterator erase( iterator pos )
+            {
+                return (erase(begin() + pos, begin() + pos + 1));
+            }
+
+			iterator erase( iterator first, iterator last )
+            {
+                const size_type pos_idx = static_cast<size_type>(first - begin());
+                const size_type count = static_cast<size_type>(last - first);
+
+                for (size_type i = 0; i < count; ++i)
+                {
+                    allocator_.destroy(last_ - 1 - i);
+                }
+                for (size_type i = pos_idx; i < size(); ++i)
+                {
+                    *(first_ + i) = *(first_ + i + count);
+                }
+                last_ -= count;
+                return (begin() + pos_idx + count);
+            }
 
 			void push_back( const T& value )
             {
                 if (last_ == capacity_last_)
                 {
-                    // realloc(current size * 2)
+                    reserve(size() * 2);
                 }
                 allocator_.construct(last_, value);
                 ++last_;
             }
+
 			void pop_back( void )
             {
                 allocator_.destruct(last_ - 1);
                 --last_;
             }
+
 			void resize( size_type count, T value = T() )
             {
+                if (count > capacity() * 2)
+                {
+                    reserve(count);
+                }
+                else if (count > capacity())
+                {
+                    reserve(capacity() * 2);
+                }
 
+                if (count < size())
+                {
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        allocator_.destroy(last_ - 1);
+                        --last_;
+                    }
+                }
+                else
+                {
+                    for (size_type i = 0; i < count; ++i)
+                    {
+                        allocator_.construct(last_, value);
+                        ++last_;
+                    }
+                }
             }
-			void swap( vector& other );
+
+			void swap( vector& other )
+            {
+                ft::swap<pointer>(first_, other.first_);
+                ft::swap<pointer>(last_, other.last_);
+                ft::swap<pointer>(capacity_last_, other.capacity_last_);
+                ft::swap<allocator_type>(allocator_, other.allocator_);
+            }
 		
 		private:
 			pointer first_;
@@ -461,7 +619,10 @@ namespace ft
     }
 
 	template < class T, class Alloc >
-	void swap( ft::vector<T, Alloc>& lhs, ft::vector<T, Alloc>& rhs );
+	void swap( ft::vector<T, Alloc>& lhs, ft::vector<T, Alloc>& rhs )
+    {
+        lhs.swap(rhs);
+    }
 }
 
 #endif

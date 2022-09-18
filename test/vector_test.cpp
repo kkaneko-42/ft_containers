@@ -1,66 +1,57 @@
 #include <vector>
 #include <iostream>
+#include "vector.hpp"
 
 class Sample
 {
     public:
-        Sample( void ): memory(NULL)
+        Sample( void )
         {
             std::cout << "default constructor called" << std::endl;
-            reallocArray(42, 0);
         }
 
         Sample( const Sample& src )
         {
             std::cout << "copy constructor called" << std::endl;
-            reallocArray(42, 0);
         }
 
         Sample& operator=( const Sample& rhs )
         {
             std::cout << "Assigned" << std::endl;
-            if (this != &rhs)
-            {
-                reallocArray(42, 0);
-            }
             return (*this);
         }
         ~Sample()
         {
             std::cout << "Destructor called" << std::endl;
-            delete[] memory;
         }
-
-    private:
-        void reallocArray( size_t count, int value = 0 )
-        {
-            delete[] memory;
-            memory = new int[count];
-            for (size_t i = 0; i < count; ++i)
-            {
-                memory[i] = value;
-            }
-        }
-
-    private:
-        int *memory;
 };
+
+template < class T >
+static void printAll(const std::vector<T>& vec)
+{
+    for (typename std::vector<T>::const_iterator it = vec.begin(); it < vec.end(); ++it)
+    {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+}
 
 int main()
 {
 	std::vector<Sample> a(5);
     std::vector<Sample> b(8);
+    std::vector<int> integers(5, 42);
+    Sample s;
 
-    std::cout << a.capacity() << std::endl;
-    std::cout << a.size() << std::endl;
-    std::cout << "=====" << std::endl;
-    a.reserve(7);
-    std::cout << a.capacity() << std::endl;
-    std::cout << a.size() << std::endl;
-    std::cout << "=====" << std::endl;
-    a.assign(b.begin(), b.end());
-    std::cout << a.capacity() << std::endl;
-    std::cout << a.size() << std::endl;
-    std::cout << "=====" << std::endl;
+    std::cout << "capa: " << integers.capacity() << std::endl;
+    std::cout << "size: " << integers.size() << std::endl;
+    printAll<int>(integers);
+    std::cout << "=======" << std::endl;
+
+    integers.resize(11, 0);
+    std::cout << "capa: " << integers.capacity() << std::endl;
+    std::cout << "size: " << integers.size() << std::endl;
+    printAll<int>(integers);
+
     return (0);
 }
