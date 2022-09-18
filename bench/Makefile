@@ -1,6 +1,7 @@
 INC_DIR := ../include
 SRCS	:=	vector_bench.cpp\
-			Stopwatch.cpp
+			Stopwatch.cpp \
+			vector_bench_cases.cpp
 OBJS	:= $(SRCS:.cpp=.o)
 CXX		:= c++
 CXXFLAGS:= 

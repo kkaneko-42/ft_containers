@@ -73,11 +73,11 @@ int benchIterConstructor( std::size_t n, int stress_power )
 
     std::cout << "====== Initialize by input iterator Constructor ======" << std::endl;
     w.start();
-    std::vector<std::vector<int>::iterator> a(std_src.begin(), std_src.end());
+    std::vector<int> a(std_src.begin(), std_src.end());
     std_score = w.getElapsedMilliseconds();
 
     w.restart();
-    ft::vector<ft::vector<int>::iterator> b(ft_src.begin(), ft_src.end());
+    ft::vector<int> b(ft_src.begin(), ft_src.end());
     ft_score = w.getElapsedMilliseconds();
 
     return (benchResult(std_score, ft_score));
@@ -246,14 +246,14 @@ int benchIterAssign( std::size_t n, int stress_power )
 
         ret += benchResult(std_score, ft_score);
     }
-    std::cout << "@lhs.capacity() < rhs.capacity() case" << std::endl;
+    std::cout << "@lhs.capacity() > rhs.capacity() case" << std::endl;
     {
         // todo: randamize
         // note: n - 1 may underflow
-        std::vector<int> std_src(n - 1);
-        ft::vector<int> ft_src(n - 1);
-        std::vector<int> a(n);
-        ft::vector<int> b(n);
+        std::vector<int> std_src(n);
+        ft::vector<int> ft_src(n);
+        std::vector<int> a(n + 1);
+        ft::vector<int> b(n + 1);
 
         w.start();
         a.assign<std::vector<int>::iterator>(std_src.begin(), std_src.end());
@@ -279,15 +279,15 @@ int benchReserve( std::size_t n, int stress_power )
     std::cout << "@this->capacity() < count case" << std::endl;
     {
         // todo: apply stress_power
-        std::vector<int> a(n - 10);
-        ft::vector<int> b(n - 10);
+        std::vector<int> a(n);
+        ft::vector<int> b(n);
 
         w.start();
-        a.reserve(n);
+        a.reserve(n + 1);
         std_score = w.getElapsedMilliseconds();
 
         w.restart();
-        b.reserve(n);
+        b.reserve(n + 1);
         ft_score = w.getElapsedMilliseconds();
 
         ret += benchResult(std_score, ft_score);
@@ -295,8 +295,8 @@ int benchReserve( std::size_t n, int stress_power )
     std::cout << "@this->capacity() > count case" << std::endl;
     {
         // todo: apply stress_power
-        std::vector<int> a(n + 10);
-        ft::vector<int> b(n + 10);
+        std::vector<int> a(n + 1);
+        ft::vector<int> b(n + 1);
 
         w.start();
         a.reserve(n);
@@ -333,21 +333,197 @@ int benchClear( std::size_t n, int stress_power )
     return (benchResult(std_score, ft_score));
 }
 
-/*
-benchInsert,
-benchRangeInsert,
-benchIterInsert,
-benchErase,
-benchIterErase,
-benchPushBack,
-benchPopBack,
-benchResize,
-benchSwap
-*/
+int benchInsert( std::size_t n, int stress_power )
+{
+    Stopwatch w;
+    double std_score;
+    double ft_score;
+    std::vector<int> a(n);
+    ft::vector<int> b(n);
+
+    std::cout << "====== Insert ======" << std::endl;
+    // todo: apply stress_power
+    w.start();
+    a.insert(a.begin(), 0);
+    std_score = w.getElapsedMilliseconds();
+
+    w.restart();
+    b.insert(b.begin(), 0);
+    ft_score = w.getElapsedMilliseconds();
+
+    return (benchResult(std_score, ft_score));
+}
+
+int benchRangeInsert( std::size_t n, int stress_power )
+{
+    Stopwatch w;
+    double std_score;
+    double ft_score;
+    std::vector<int> a(n);
+    ft::vector<int> b(n);
+
+    std::cout << "====== Range Insert ======" << std::endl;
+    w.start();
+    a.insert(a.begin(), stress_power, 0);
+    std_score = w.getElapsedMilliseconds();
+
+    w.restart();
+    b.insert(b.begin(), stress_power, 0);
+    ft_score = w.getElapsedMilliseconds();
+
+    return (benchResult(std_score, ft_score));
+}
+
+int benchIterInsert( std::size_t n, int stress_power )
+{
+    Stopwatch w;
+    double std_score;
+    double ft_score;
+    std::vector<int> a(n);
+    ft::vector<int> b(n);
+    std::vector<int> src(stress_power);
+
+    std::cout << "====== Iter Insert ======" << std::endl;
+    w.start();
+    a.insert(a.begin(), src.begin(), src.end());
+    std_score = w.getElapsedMilliseconds();
+
+    w.restart();
+    b.insert(b.begin(), src.begin(), src.end());
+    ft_score = w.getElapsedMilliseconds();
+
+    return (benchResult(std_score, ft_score));
+}
+
+int benchErase( std::size_t n, int stress_power )
+{
+    Stopwatch w;
+    double std_score;
+    double ft_score;
+    std::vector<int> a(n);
+    ft::vector<int> b(n);
+
+    std::cout << "====== Erase ======" << std::endl;
+    // todo: apply stress_power
+    w.start();
+    a.erase(a.begin());
+    std_score = w.getElapsedMilliseconds();
+
+    w.restart();
+    b.erase(b.begin());
+    ft_score = w.getElapsedMilliseconds();
+
+    return (benchResult(std_score, ft_score));
+}
+
+int benchIterErase( std::size_t n, int stress_power )
+{
+    Stopwatch w;
+    double std_score;
+    double ft_score;
+    std::vector<int> a(n);
+    ft::vector<int> b(n);
+    std::vector<int> src(stress_power);
+
+    std::cout << "====== Iter Erase ======" << std::endl;
+    
+    w.start();
+    // todo: apply stress_power
+    a.erase(a.begin(), a.begin() + (n / 2));
+    std_score = w.getElapsedMilliseconds();
+
+    w.restart();
+    b.erase(b.begin(), b.begin() + (n / 2));
+    ft_score = w.getElapsedMilliseconds();
+
+    return (benchResult(std_score, ft_score));
+}
+
+int benchPushBack( std::size_t n, int stress_power )
+{
+    Stopwatch w;
+    double std_score;
+    double ft_score;
+    std::vector<int> a(n);
+    ft::vector<int> b(n);
+
+    std::cout << "====== PushBack ======" << std::endl;
+    w.start();
+    a.push_back(0);
+    std_score = w.getElapsedMilliseconds();
+
+    w.restart();
+    b.push_back(0);
+    ft_score = w.getElapsedMilliseconds();
+
+    return (benchResult(std_score, ft_score));
+}
+
+int benchPopBack( std::size_t n, int stress_power )
+{
+    Stopwatch w;
+    double std_score;
+    double ft_score;
+    std::vector<int> a(n);
+    ft::vector<int> b(n);
+
+    std::cout << "====== PopBack ======" << std::endl;
+    w.start();
+    a.pop_back();
+    std_score = w.getElapsedMilliseconds();
+
+    w.restart();
+    b.pop_back();
+    ft_score = w.getElapsedMilliseconds();
+
+    return (benchResult(std_score, ft_score));
+}
+
+int benchResize( std::size_t n, int stress_power )
+{
+    Stopwatch w;
+    double std_score;
+    double ft_score;
+    std::vector<int> a(n);
+    ft::vector<int> b(n);
+
+    std::cout << "====== PopBack ======" << std::endl;
+    w.start();
+    a.resize(stress_power, 0);
+    std_score = w.getElapsedMilliseconds();
+
+    w.restart();
+    b.resize(stress_power, 0);
+    ft_score = w.getElapsedMilliseconds();
+
+    return (benchResult(std_score, ft_score));
+}
+
+int benchSwap( std::size_t n, int stress_power )
+{
+    Stopwatch w;
+    double std_score;
+    double ft_score;
+    std::vector<int> a(n);
+    std::vector<int> a_swap(n + stress_power);
+    ft::vector<int> b(n);
+    ft::vector<int> b_swap(n + stress_power);
+
+    std::cout << "====== Swap ======" << std::endl;
+    w.start();
+    a.swap(a_swap);
+    std_score = w.getElapsedMilliseconds();
+
+    w.restart();
+    b.swap(b_swap);
+    ft_score = w.getElapsedMilliseconds();
+
+    return (benchResult(std_score, ft_score));
+}
 
 std::vector<int(*)(std::size_t, int)> getBenchCases( void )
 {
-    const std::size_t nb_bench = 10;
+    const std::size_t nb_bench = 19;
     int (*bench[nb_bench])(std::size_t, int)  = {
         benchDefaultConstructor,
         benchInitConstructor,
@@ -358,7 +534,16 @@ std::vector<int(*)(std::size_t, int)> getBenchCases( void )
         benchAssign,
         benchIterAssign,
         benchReserve,
-        benchClear
+        benchClear,
+        benchInsert,
+        benchRangeInsert,
+        benchIterInsert,
+        benchErase,
+        benchIterErase,
+        benchPushBack,
+        benchPopBack,
+        benchResize,
+        benchSwap
     };
     std::vector<int(*)(std::size_t, int)> cases;
 

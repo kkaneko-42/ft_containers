@@ -112,6 +112,19 @@ namespace ft
 
 			vector( const vector& other )
 			{
+                // default construction
+                try
+                {
+                    first_ = allocator_.allocate(0);
+                }
+                catch(const std::exception& e)
+                {
+                    // Throw exception thrown by the allocation.
+                    throw;
+                }
+                last_ = first_;
+                capacity_last_ = last_;
+
 				*this = other;
 			}
 
@@ -222,6 +235,7 @@ namespace ft
                         *(first_ + i) = *(first + i);
                         ++i;
                     }
+                    
                     while (i < count)
                     {
                         allocator_.construct(first_ + i, *(first + i));
@@ -391,28 +405,7 @@ namespace ft
 			iterator insert( iterator pos, const T& value )
             {
                 const size_type pos_idx = static_cast<size_type>(pos - begin());
-
-                if (last_ == capacity_last_)
-                {
-                    reserve(capacity() * 2);
-                }
-
-                if (pos_idx = size())
-                {
-                    allocator_.construct(last_, value);
-                    ++last_;
-                }
-                else
-                {
-                    allocator_.construct(last_, *(last_ - 1));
-                    for (size_type i = size() - 1; i > pos_idx; ++i)
-                    {
-                        *(first_ + i) = *(first_ + i - 1);
-                    }
-                    *(first_ + pos_idx) = value;
-                    last_ += 1;
-                }
-
+                insert(pos, 1, value);
                 return (begin() + pos_idx);
             }
 
@@ -424,7 +417,7 @@ namespace ft
                 reserve(count + size());
 
                 // pos == end()
-                if (begin() + pos_idx == end())
+                if (pos_idx == size())
                 {
                     for (size_type i = 0; i < count; ++i)
                     {
@@ -438,7 +431,7 @@ namespace ft
                     {
                         allocator_.construct(last_ + i, *(last_ - count + i));
                     }
-                    for (size_type i = size() - 1; i > pos_idx + count; ++i)
+                    for (size_type i = size() - 1; i > pos_idx + count; --i)
                     {
                         *(first_ + i) = *(first_ + i - count);
                     }
@@ -448,8 +441,6 @@ namespace ft
                     }
                     last_ += count;
                 }
-
-                return (begin() + pos_idx);
             }
 
 			template < class InputIt >
@@ -464,6 +455,7 @@ namespace ft
 
                 if (begin() + pos_idx == end())
                 {
+                    
                     for (size_type i = 0; i < count; ++i)
                     {
                         allocator_.construct(last_ + i, *(first + i));
@@ -476,7 +468,7 @@ namespace ft
                     {
                         allocator_.construct(last_ + i, *(last_ - count + i));
                     }
-                    for (size_type i = size() - 1; i > pos_idx + count; ++i)
+                    for (size_type i = size() - 1; i > pos_idx + count; --i)
                     {
                         *(first_ + i) = *(first_ + i - count);
                     }
@@ -486,13 +478,11 @@ namespace ft
                     }
                     last_ += count;
                 }
-
-                return (begin() + pos_idx);
             }
 
 			iterator erase( iterator pos )
             {
-                return (erase(begin() + pos, begin() + pos + 1));
+                return (erase(pos, pos + 1));
             }
 
 			iterator erase( iterator first, iterator last )
@@ -524,7 +514,7 @@ namespace ft
 
 			void pop_back( void )
             {
-                allocator_.destruct(last_ - 1);
+                allocator_.destroy(last_ - 1);
                 --last_;
             }
 

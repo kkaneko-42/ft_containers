@@ -41,14 +41,14 @@ int main()
 	std::vector<Sample> a(5);
     std::vector<Sample> b(8);
     std::vector<int> integers(5, 42);
+    std::vector<int> src(100);
     Sample s;
 
     std::cout << "capa: " << integers.capacity() << std::endl;
     std::cout << "size: " << integers.size() << std::endl;
-    printAll<int>(integers);
     std::cout << "=======" << std::endl;
 
-    integers.resize(11, 0);
+    integers.insert(integers.end(), src.begin(), src.begin() + 20);
     std::cout << "capa: " << integers.capacity() << std::endl;
     std::cout << "size: " << integers.size() << std::endl;
     printAll<int>(integers);
