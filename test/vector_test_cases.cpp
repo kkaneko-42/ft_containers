@@ -8,7 +8,6 @@
 #define RESET_COLOR "\033[m"
 #define MAX_LOSS 20 // milli seconds
 
-/*
 static void printContents( const std::vector<int>& vec )
 {
     for (std::vector<int>::const_iterator it = vec.begin(); it < vec.end(); ++it)
@@ -24,8 +23,8 @@ static void printContents( const ft::vector<int>& vec )
     {
         std::cout << *it << " ";
     }
+    std::cout << std::endl;
 }
-*/
 
 static void printTitle( const std::string& title )
 {
@@ -78,15 +77,20 @@ static int testResult( const std::vector<int>& std_res, const ft::vector<int>& f
 {
     int ret = 1;
 
-    if (std::equal<
-    std::vector<int>::const_iterator,
-    ft::vector<int>::const_iterator>(
-        std_res.begin(), std_res.end(), ft_res.begin()))
+    if (std_res.size() == ft_res.size()
+        && std::equal<
+        std::vector<int>::const_iterator,
+        ft::vector<int>::const_iterator>(
+            std_res.begin(), std_res.end(), ft_res.begin()))
     {
         ret = 0;
     }
     
     // todo: put log(contents, size, capacity, etc...)
+    std::cout << "std: ";
+    printContents(std_res);
+    std::cout << "ft_: ";
+    printContents(ft_res);
     if (verbose)
     {
         printResult(ret == 0);
@@ -617,7 +621,7 @@ int testRangeErase( std::size_t n )
     ft::vector<int> b(n);
     std::vector<int>::iterator std_res;
     ft::vector<int>::iterator ft_res;
-    std::size_t pos = rand() % n, count = rand() % n;
+    std::size_t pos = rand() % n, count = std::min(rand() % n, n - pos);
 
     printTitle("Range Erase");
     std_res = a.erase(a.begin() + pos, a.begin() + pos + count);
