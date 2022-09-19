@@ -143,7 +143,7 @@ namespace ft
 			{
 				if (this != &other)
 				{
-					assign<iterator>(other.begin(), other.end());
+					assign<const_iterator>(other.begin(), other.end());
 				}
 				return (*this);
 			}

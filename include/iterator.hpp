@@ -32,7 +32,7 @@ namespace ft
             {
                 if (this != &other)
                 {
-                    it_ = other.it_;
+                    it_ = other.base();
                 }
                 return (*this);
             }
