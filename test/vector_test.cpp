@@ -1,5 +1,6 @@
 #include <vector>
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
 #define USAGE "./vector <size of vector tested>"
 
@@ -26,6 +27,7 @@ int main( int ac, char** av )
         return (1);
     }
 
+    srand(time(NULL));
     nb_elements = atoi(av[1]);
     for (std::vector<int(*)(std::size_t)>::iterator it = cases.begin(); it < cases.end(); ++it)
     {

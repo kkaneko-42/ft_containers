@@ -317,20 +317,20 @@ namespace ft
 
 			reverse_iterator rbegin( void )
             {
-                return (reverse_iterator(last_ - 1));
+                return (reverse_iterator(iterator(last_ - 1)));
             }
 			const_reverse_iterator rbegin( void ) const
             {
-                return (const_reverse_iterator(last_ - 1));
+                return (const_reverse_iterator(iterator(last_ - 1)));
             }
 
 			reverse_iterator rend( void )
             {
-                return (reverse_iterator(first_ - 1));
+                return (reverse_iterator(iterator(first_ - 1)));
             }
 			const_reverse_iterator rend( void ) const
             {
-                return (const_reverse_iterator(first_ - 1));
+                return (const_reverse_iterator(iterator(first_ - 1)));
             }
 
 			/* Capacity */
@@ -344,7 +344,10 @@ namespace ft
             }
 			size_type max_size( void ) const
             {
-                return (std::numeric_limits<difference_type>::max());
+                return (std::min<size_type>(
+                    std::numeric_limits<difference_type>::max(),
+                    allocator_.max_size())
+                );
             }
 			void reserve( size_type new_cap )
             {
@@ -449,13 +452,13 @@ namespace ft
             {
                 const size_type count = static_cast<size_type>(last - first);
                 const size_type pos_idx = static_cast<size_type>(pos - begin());
+                const size_type current_size = size();
 
                 // if capacity is enough, do nothing
                 reserve(count + size());
 
                 if (begin() + pos_idx == end())
                 {
-                    
                     for (size_type i = 0; i < count; ++i)
                     {
                         allocator_.construct(last_ + i, *(first + i));
@@ -466,9 +469,10 @@ namespace ft
                 {
                     for (size_type i = 0; i < count; ++i)
                     {
-                        allocator_.construct(last_ + i, *(last_ - count + i));
+                        allocator_.construct(last_, *(last_ - count));
+                        ++last_;
                     }
-                    for (size_type i = size() - 1; i > pos_idx + count; --i)
+                    for (size_type i = current_size - 1; i > pos_idx + count; --i)
                     {
                         *(first_ + i) = *(first_ + i - count);
                     }

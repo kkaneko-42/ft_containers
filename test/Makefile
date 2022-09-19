@@ -10,7 +10,7 @@ OBJ_DIR := ./objs
 OBJS	:= $(SRCS:.cpp=.o)
 DEPS 	:= $(OBJS:.o=.d)
 CXX		:= c++
-CXXFLAGS:= -Wall -Wextra -Werror -MMD -MP -fsanitize=address -fsanitize=undefined -g3
+CXXFLAGS:= -Wall -Wextra -Werror -MMD -MP #-fsanitize=address -fsanitize=undefined -g3
 
 all: enable_if is_integral equal lexicographical_compare pair
 
