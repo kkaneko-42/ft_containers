@@ -48,7 +48,7 @@ double Stopwatch::getElapsedMilliseconds( void )
         now = stop_time_;
     }
 
-    seconds = difftime(start_time_.tv_sec, now.tv_sec);
+    seconds = difftime(now.tv_sec, start_time_.tv_sec);
     u_seconds = static_cast<double>(now.tv_usec - start_time_.tv_usec);
 
     return ((seconds * 1000) + (u_seconds / 1000));

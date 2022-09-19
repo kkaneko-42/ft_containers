@@ -1,6 +1,7 @@
 #include <vector>
 #include <cstdlib>
 #include <iostream>
+#define USAGE "./vector <size of vector tested>"
 
 std::vector<int (*)(std::size_t)> getTestCases( void );
 
@@ -13,7 +14,7 @@ static bool validateArgs( int ac, char** av )
     return (false);
 }
 
-int main()
+int main( int ac, char** av )
 {
     int nb_elements;
 	int total_ko = 0;

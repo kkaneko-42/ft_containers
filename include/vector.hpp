@@ -26,7 +26,7 @@ namespace ft
 			typedef typename Allocator::pointer pointer;
 			typedef typename Allocator::const_pointer const_pointer;
 			typedef ft::random_access_iterator<value_type> iterator;
-			typedef const ft::random_access_iterator<value_type> const_iterator;
+			typedef ft::random_access_iterator<const value_type> const_iterator;
 			typedef ft::reverse_iterator<iterator> reverse_iterator;
 			typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 
@@ -230,7 +230,7 @@ namespace ft
                 else
                 {
                     size_type i = 0;
-                    while (i < current_size)
+                    while (i < current_size && i < count)
                     {
                         *(first_ + i) = *(first + i);
                         ++i;
@@ -321,7 +321,7 @@ namespace ft
             }
 			const_reverse_iterator rbegin( void ) const
             {
-                return (reverse_iterator(last_ - 1));
+                return (const_reverse_iterator(last_ - 1));
             }
 
 			reverse_iterator rend( void )
@@ -330,7 +330,7 @@ namespace ft
             }
 			const_reverse_iterator rend( void ) const
             {
-                return (reverse_iterator(first_ - 1));
+                return (const_reverse_iterator(first_ - 1));
             }
 
 			/* Capacity */
@@ -490,15 +490,15 @@ namespace ft
                 const size_type pos_idx = static_cast<size_type>(first - begin());
                 const size_type count = static_cast<size_type>(last - first);
 
-                for (size_type i = 0; i < count; ++i)
-                {
-                    allocator_.destroy(last_ - 1 - i);
-                }
-                for (size_type i = pos_idx; i < size(); ++i)
+                for (size_type i = pos_idx; i < pos_idx + count; ++i)
                 {
                     *(first_ + i) = *(first_ + i + count);
                 }
-                last_ -= count;
+                for (size_type i = 0; i < count; ++i)
+                {
+                    allocator_.destroy(last_ - 1);
+                    --last_;
+                }
                 return (begin() + pos_idx + count);
             }
 

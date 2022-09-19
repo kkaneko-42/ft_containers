@@ -3,6 +3,7 @@ SRCS	:=	vector_bench.cpp\
 			Stopwatch.cpp \
 			vector_bench_cases.cpp
 OBJS	:= $(SRCS:.cpp=.o)
+DEPS	:= $(OBJS:.o=.d)
 CXX		:= c++
 CXXFLAGS:= 
 
@@ -22,4 +23,6 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re debug
+-include: $(DEPS)
+
+.PHONY: all clean fclean re
