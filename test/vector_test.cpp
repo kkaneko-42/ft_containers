@@ -1,57 +1,44 @@
 #include <vector>
+#include <cstdlib>
 #include <iostream>
-#include "vector.hpp"
 
-class Sample
+std::vector<int (*)(std::size_t)> getTestCases( void );
+
+static bool validateArgs( int ac, char** av )
 {
-    public:
-        Sample( void )
-        {
-            std::cout << "default constructor called" << std::endl;
-        }
-
-        Sample( const Sample& src )
-        {
-            std::cout << "copy constructor called" << std::endl;
-        }
-
-        Sample& operator=( const Sample& rhs )
-        {
-            std::cout << "Assigned" << std::endl;
-            return (*this);
-        }
-        ~Sample()
-        {
-            std::cout << "Destructor called" << std::endl;
-        }
-};
-
-template < class T >
-static void printAll(const std::vector<T>& vec)
-{
-    for (typename std::vector<T>::const_iterator it = vec.begin(); it < vec.end(); ++it)
+    if (ac != 2 || atoi(av[1]) < 0)
     {
-        std::cout << *it << " ";
+        return (true);
     }
-    std::cout << std::endl;
+    return (false);
 }
 
 int main()
 {
-	std::vector<Sample> a(5);
-    std::vector<Sample> b(8);
-    std::vector<int> integers(5, 42);
-    std::vector<int> src(100);
-    Sample s;
+    int nb_elements;
+	int total_ko = 0;
+    std::vector<int (*)(std::size_t)> cases = getTestCases();
 
-    std::cout << "capa: " << integers.capacity() << std::endl;
-    std::cout << "size: " << integers.size() << std::endl;
-    std::cout << "=======" << std::endl;
+    if (validateArgs(ac, av))
+    {
+        std::cerr << USAGE << std::endl;
+        return (1);
+    }
 
-    integers.insert(integers.end(), src.begin(), src.begin() + 20);
-    std::cout << "capa: " << integers.capacity() << std::endl;
-    std::cout << "size: " << integers.size() << std::endl;
-    printAll<int>(integers);
+    nb_elements = atoi(av[1]);
+    for (std::vector<int(*)(std::size_t)>::iterator it = cases.begin(); it < cases.end(); ++it)
+    {
+        total_ko += (*it)(nb_elements);
+    }
+
+    if (total_ko != 0)
+    {
+        std::cout << "\033[31mKO: " << total_ko << "\033[m" << std::endl;
+    }
+    else
+    {
+        std::cout << "\033[32mAll OK" << "\033[m" << std::endl;
+    }
 
     return (0);
 }
