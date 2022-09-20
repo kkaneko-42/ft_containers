@@ -494,9 +494,13 @@ namespace ft
                 const size_type pos_idx = static_cast<size_type>(first - begin());
                 const size_type count = static_cast<size_type>(last - first);
 
-                for (size_type i = pos_idx; i < pos_idx + count; ++i)
+                for (size_type i = 0; i < count; ++i)
                 {
-                    *(first_ + i) = *(first_ + i + count);
+                    if (i + pos_idx + count >= size())
+                    {
+                        break;
+                    }
+                    *(first_ + pos_idx + i) = *(first_ + pos_idx + count + i);
                 }
                 for (size_type i = 0; i < count; ++i)
                 {
@@ -524,29 +528,18 @@ namespace ft
 
 			void resize( size_type count, T value = T() )
             {
-                if (count > capacity() * 2)
-                {
-                    reserve(count);
-                }
-                else if (count > capacity())
-                {
-                    reserve(capacity() * 2);
-                }
-
                 if (count < size())
                 {
-                    for (size_type i = 0; i < count; ++i)
+                    while (size() != count)
                     {
-                        allocator_.destroy(last_ - 1);
-                        --last_;
+                        pop_back();
                     }
                 }
                 else
                 {
-                    for (size_type i = 0; i < count; ++i)
+                    while (size() != count)
                     {
-                        allocator_.construct(last_, value);
-                        ++last_;
+                        push_back(value);
                     }
                 }
             }
