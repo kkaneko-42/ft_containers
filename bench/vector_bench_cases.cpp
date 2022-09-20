@@ -1,21 +1,22 @@
 #include <iostream>
 #include <vector>
 #include <cstdlib>
+#include <limits>
 #include "vector.hpp"
 #include "Stopwatch.hpp"
 #define RED "\033[31m"
 #define GREEN "\033[32m"
 #define RESET_COLOR "\033[m"
-#define MAX_LOSS 20 // milli seconds
+#define MAX_LOSS 20 // times
 #define BENCH_FUNC int(*)(std::size_t, int)
 
 static int benchResult( double std_score, double ft_score )
 {
-    const double diff = ft_score - std_score;
+    const double score = ft_score / (std_score + std::numeric_limits<double>::epsilon());
     int ret = 0;
     const char* color = GREEN;
 
-    if (diff > MAX_LOSS)
+    if (score > MAX_LOSS)
     {
         ret = 1;
         color = RED;
@@ -23,7 +24,7 @@ static int benchResult( double std_score, double ft_score )
 
     std::cout << "std: " << std_score << "[ms]" << std::endl;
     std::cout << "ft: " << ft_score << "[ms]" << std::endl;
-    std::cout << "diff: " << color << diff << "[ms]" << RESET_COLOR << std::endl;
+    std::cout << "score(ft / std): " << color << score << RESET_COLOR << std::endl;
     return (ret);
 }
 
