@@ -180,16 +180,17 @@ namespace ft
                 }
                 else
                 {
-                    size_type i = 0;
-                    while (i < current_size)
+                    for (size_type i = 0; i < current_size; ++i)
                     {
                         *(first_ + i) = value;
-                        ++i;
                     }
-                    while (i < count)
+                    while (size() > count)
                     {
-                        allocator_.construct(first_ + i, value);
-                        ++i;
+                        pop_back();
+                    }
+                    while (size() < count)
+                    {
+                        push_back(value);
                     }
                 }
             }
@@ -236,10 +237,14 @@ namespace ft
                         ++i;
                     }
                     
-                    while (i < count)
+                    while (size() < count)
                     {
-                        allocator_.construct(first_ + i, *(first + i));
+                        push_back(*(first + i));
                         ++i;
+                    }
+                    while (size() > count)
+                    {
+                        pop_back();
                     }
                 }
             }

@@ -191,17 +191,16 @@ int testAssign( std::size_t n )
     int ret = 0;
 
     printTitle("Assign");
-    std::cout << "@lhs.capacity() < rhs.capacity() case" << std::endl;
+    std::cout << "@lhs.capacity() > rhs.capacity() case" << std::endl;
     {
         std::vector<int> a(n);
         ft::vector<int> b(n);
-
 
         a.assign(n + 1, 42);
         b.assign(n + 1, 42);
         ret += testResult(a, b);
     }
-    std::cout << "@lhs.capacity() > rhs.capacity() case" << std::endl;
+    std::cout << "@lhs.capacity() < rhs.capacity() case" << std::endl;
     {
         std::vector<int> a(n + 1);
         ft::vector<int> b(n + 1);
